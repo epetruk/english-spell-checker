@@ -25,12 +25,12 @@ This program requires java 8 on the host machine.
 
 ## Built With
 
-java 1.8
+Java 1.8
 
 
 ## Versioning
 
-1.0
+v1.0
 
 ## Authors
 
@@ -39,6 +39,4 @@ Evan Petruk
 ## License
 
 This project is licensed under the GNU General Public License v3, [see license.txt](license.txt)
-
-## Acknowledgments
 

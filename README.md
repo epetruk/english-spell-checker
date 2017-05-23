@@ -38,5 +38,5 @@ Evan Petruk
 
 ## License
 
-This project is licensed under the GNU General Public License v3, [see license.txt](license.txt).
+This project is licensed under the GNU General Public License v3, [see license.txt](LICENSE.txt).
 

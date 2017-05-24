@@ -494,7 +494,7 @@ public class SpellCheckMainGui extends JFrame implements ActionListener {
 				} else if (tempFileSpellCheck.allWords.size() == 0) {
 					log.append("Please add a file that has words in it. This program is designed for .txt files.\n",
 							Color.red);
-//				} else if (tempFileSpellCheck.allWords.size() > 50000) {
+				}// else if (tempFileSpellCheck.allWords.size() > 50000) {
 //					log.append("Please add a file that has less than 50000 words in it.\n", Color.red);
 //				}
 

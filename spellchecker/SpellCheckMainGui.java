@@ -47,112 +47,118 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class SpellCheckMainGui extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = -7957858494133020315L;
-	
+
 	// main Gui components
 	JButton openDictionaryButton, openFileToSpellCheck, startButton;
-	Log log=new Log();
+	Log log = new Log();
 	JScrollPane scrollPane;
 	JFileChooser fileChooser;
-	
+
 	// files required to start spelling checks
 	Dictionary dictionaryFile;
 	FileToSpellCheck fileToSpellCheck;
-	
-	// holds spelling errors with proposed strings in a set. 
-	// Insertion order is maintained with LinkedHashMap which is important for preserving order from best match to worst.
-	LinkedHashMap<String, Set<String>> wordSpellingCorrections=new LinkedHashMap<String,Set<String>>();
-	
+
+	// holds spelling errors with proposed strings in a set.
+	// Insertion order is maintained with LinkedHashMap which is important for
+	// preserving order from best match to worst.
+	LinkedHashMap<String, Set<String>> wordSpellingCorrections = new LinkedHashMap<String, Set<String>>();
+
 	// how many word correction proposals are saved and displayed
-	final Integer MAXNUMOFWORDPROPOSALS=30;
-	
-	// multi-threaded the loading of the files. Useful when files are large to load both at same time
+	final Integer MAXNUMOFWORDPROPOSALS = 30;
+
+	// multi-threaded the loading of the files. Useful when files are large to
+	// load both at same time
 	// increment when loading and decrement when done.
-	Integer fileLoadsInProgress=0;
+	Integer fileLoadsInProgress = 0;
 
 	SpellCheckMainGui() {
-		
+
 		setLayout(new BorderLayout());
 		setTitle("English Spell Check");
-		
+
 		// check if user is running java 8
 		String version = System.getProperty("java.version");
 		int pos = version.indexOf('.');
 		pos = version.indexOf('.', pos + 1);
 		Double dVersion = Double.parseDouble(version.substring(0, pos));
 		if (dVersion < 1.8) {
-			JOptionPane.showMessageDialog(null, "Please install Java version 1.8 or higher to run this program.","Unsupported Java Version", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Please install Java version 1.8 or higher to run this program.",
+					"Unsupported Java Version", JOptionPane.INFORMATION_MESSAGE);
 			System.exit(0);
 		}
-		
+
 		log.append("Welcome to English Spell Check.\n", Color.BLACK);
 		JScrollPane scrollPane = new JScrollPane(log);
-		
+
 		// file chooser for loading files via the GUI
 		fileChooser = new JFileChooser();
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("TEXT FILES", "txt", "text");
 		fileChooser.setFileFilter(filter);
-		
+
 		openDictionaryButton = new JButton("Open Dictionary .txt File...");
 		openDictionaryButton.addActionListener(this);
 		openFileToSpellCheck = new JButton("Open .txt File To Spell Check...");
 		openFileToSpellCheck.addActionListener(this);
 		// add images to open buttons
 		try {
-		    Image img = ImageIO.read(getClass().getResource("images/file.png"));
-		    Image newImg= img.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH);
-		    openDictionaryButton.setIcon(new ImageIcon(newImg));
-		    openFileToSpellCheck.setIcon(new ImageIcon(newImg));
-		 } catch (Exception ex) {
-			  ex.printStackTrace();
-		 }
-		
+			Image img = ImageIO.read(getClass().getResource("images/file.png"));
+			Image newImg = img.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH);
+			openDictionaryButton.setIcon(new ImageIcon(newImg));
+			openFileToSpellCheck.setIcon(new ImageIcon(newImg));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
 		startButton = new JButton("Start Spell Check");
 		startButton.addActionListener(this);
-		
+
 		// panel to hold both open buttons
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setBackground(Color.black);
 		buttonPanel.add(openDictionaryButton);
 		buttonPanel.add(openFileToSpellCheck);
-		
+
 		// add all the components
 		add(buttonPanel, BorderLayout.PAGE_START);
 		add(scrollPane, BorderLayout.CENTER);
 		add(startButton, BorderLayout.PAGE_END);
 
 	}
-	
-	public static void main(String [] args){
+
+	public static void main(String[] args) {
 		SpellCheckMainGui gui = new SpellCheckMainGui();
 		gui.showGui();
-		
+
 	}
 
 	/**
 	 * Primarily used to make this GUI visible and set default configs.
 	 */
 	public void showGui() {
-		
+
 		setResizable(true);
 		pack();
-		
-		//default size so user know's window is visible
+
+		// default size so user know's window is visible
 		setSize(600, 600);
-		
-		//preferably same size as pop-gui. 460 width holds both open buttons, something slightly smaller doesn't
+
+		// preferably same size as pop-gui. 460 width holds both open buttons,
+		// something slightly smaller doesn't
 		setMinimumSize(new Dimension(460, 400));
-		
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 	}
 
-	/** 
+	/**
 	 * response to button clicks by user
+	 * 
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
 	public void actionPerformed(ActionEvent event) {
-		
-		// load dictionary from file chooser and validate dictionary is something expected.
+
+		// load dictionary from file chooser and validate dictionary is
+		// something expected.
 		if (event.getSource() == openDictionaryButton) {
 			int returnValue = fileChooser.showOpenDialog(this);
 			if (returnValue == JFileChooser.APPROVE_OPTION) {
@@ -161,8 +167,8 @@ public class SpellCheckMainGui extends JFrame implements ActionListener {
 			} else {
 				log.append("Cancelled open dictionary search.\n", Color.black);
 			}
-			
-		// load file to spell check and do input validation.
+
+			// load file to spell check and do input validation.
 		} else if (event.getSource() == openFileToSpellCheck) {
 			int returnValue = fileChooser.showOpenDialog(this);
 			if (returnValue == JFileChooser.APPROVE_OPTION) {
@@ -171,12 +177,12 @@ public class SpellCheckMainGui extends JFrame implements ActionListener {
 			} else {
 				log.append("Cancelled open dictionary search.\n", Color.black);
 			}
-			
-		
-		// if start button clicked get spelling errors
+
+			// if start button clicked get spelling errors
 		} else if (event.getSource() == startButton) {
-			
-			// check to make sure this window has a dictionary and file to spell check loaded.
+
+			// check to make sure this window has a dictionary and file to spell
+			// check loaded.
 			if (fileToSpellCheck == null) {
 				JOptionPane.showMessageDialog(startButton, "Please submit a file to spell check.", "No File Error",
 						JOptionPane.INFORMATION_MESSAGE);
@@ -184,100 +190,110 @@ public class SpellCheckMainGui extends JFrame implements ActionListener {
 				JOptionPane.showMessageDialog(startButton,
 						"Please submit a dictionary file before starting the spell check.", "No File Error",
 						JOptionPane.INFORMATION_MESSAGE);
-			} 
-			
-			// disable start button and grab the spelling errors with another background thread, i.e. Supervisor.
-			// must invoke additional thread to display log message and set start button disabled
+			}
+
+			// disable start button and grab the spelling errors with another
+			// background thread, i.e. Supervisor.
+			// must invoke additional thread to display log message and set
+			// start button disabled
 			else {
 				startButton.setEnabled(false);
-				wordSpellingCorrections=new LinkedHashMap<String,Set<String>>();
+				wordSpellingCorrections = new LinkedHashMap<String, Set<String>>();
 				log.append("Finding spelling errors, please wait...\n", Color.black);
 				new Supervisor(this).execute();
 			}
 		}
 	}
-	
+
 	/**
-	 * supervisor worker that updates start button when completed and instantiates SpellCheckPopUpGui to allow user to modify file that was spell checked.
+	 * supervisor worker that updates start button when completed and
+	 * instantiates SpellCheckPopUpGui to allow user to modify file that was
+	 * spell checked.
 	 *
 	 */
 	private class Supervisor extends SwingWorker<Void, Void> {
-		
+
 		// for passing mainGui to pop-gui in done method.
 		SpellCheckMainGui mainGui;
-		
-		Supervisor(SpellCheckMainGui gui){
-			mainGui=gui;
+
+		Supervisor(SpellCheckMainGui gui) {
+			mainGui = gui;
 		}
 
-        // evaluating large files could take a while, "doInBackground"
+		// evaluating large files could take a while, "doInBackground"
 		@Override
-        protected Void doInBackground() throws Exception {
-        	try {
+		protected Void doInBackground() throws Exception {
+			long startTime = System.currentTimeMillis();
+			try {
 				findSpellingErrors();
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
-        	return null;
-        }
+			
+			long endTime = System.currentTimeMillis();
+			System.out.println("Total execution time: " + (endTime - startTime) );
+			return null;
+		}
 
 		// after searched for spelling errors allow user to see these errors
-        @Override
-        protected void done() {
-        	startButton.setEnabled(true);
-	        	SpellCheckPopUpGui gui = new SpellCheckPopUpGui();
-	        	// if no spelling errors don't open the pop-up gui
-	    		if (wordSpellingCorrections.keySet().size()==0){
-	    			JOptionPane.showMessageDialog(mainGui, "Spell check complete, no spelling errors found.", "Finished",
-	    					JOptionPane.INFORMATION_MESSAGE);
-	    			mainGui.log.append("Completed spell check.\n", Color.GREEN);
-	    		}else{
-	    			gui.showGui(fileToSpellCheck,mainGui);
-	    		}
-        }
-    }
+		@Override
+		protected void done() {
+			startButton.setEnabled(true);
+			SpellCheckPopUpGui gui = new SpellCheckPopUpGui();
+			// if no spelling errors don't open the pop-up gui
+			if (wordSpellingCorrections.keySet().size() == 0) {
+				JOptionPane.showMessageDialog(mainGui, "Spell check complete, no spelling errors found.", "Finished",
+						JOptionPane.INFORMATION_MESSAGE);
+				mainGui.log.append("Completed spell check.\n", Color.GREEN);
+			} else {
+				gui.showGui(fileToSpellCheck, mainGui);
+			}
+		}
+	}
 
 	/**
-	 * For each word in file see if there's a matching spelling in dictionary. If not error.
+	 * For each word in file see if there's a matching spelling in dictionary.
+	 * If not error.
 	 * 
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
 	public void findSpellingErrors() throws InterruptedException, ExecutionException {
-		
-		// each word in file is matched against all unique words in dictionary. Each of these tasks returns a result stored in futures
+
+		// each word in file is matched against all unique words in dictionary.
+		// Each of these tasks returns a result stored in futures
 		HashSet<Future<HashMap<String, HashMap<String, Integer>>>> futures = new HashSet<Future<HashMap<String, HashMap<String, Integer>>>>();
-		
+
 		// find available threads and start a thread pool
 		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-		
-		
-		// Submit the file word to dictionary match tasks to thread pool and add the returned objects to futures for retrieval.
+
+		// Submit the file word to dictionary match tasks to thread pool and add
+		// the returned objects to futures for retrieval.
 		for (final String word : fileToSpellCheck.wordsToCheck.keySet()) {
-			Future<HashMap<String, HashMap<String, Integer>>> future = (Future<HashMap<String, HashMap<String, Integer>>>) executor
-					.submit(new Callable<HashMap<String, HashMap<String, Integer>>>() {
-						public HashMap<String, HashMap<String, Integer>> call() {
-							return checkSpelling(word);
-						}
-					});
-			futures.add(future);
+			if (!dictionaryFile.uniqueWords.contains(word.toLowerCase())) {
+				Future<HashMap<String, HashMap<String, Integer>>> future = (Future<HashMap<String, HashMap<String, Integer>>>) executor
+						.submit(new Callable<HashMap<String, HashMap<String, Integer>>>() {
+							public HashMap<String, HashMap<String, Integer>> call() {
+								return checkSpelling(word);
+							}
+						});
+
+				futures.add(future);
+			}
 
 		}
-		// when task submitted tasks are finished free up resources consumed by thread pool
+		// when task submitted tasks are finished free up resources consumed by
+		// thread pool
 		executor.shutdown();
-		
-		// for each file word that was matched against each dictionary word, check for spelling error
+
+		// for each file word that was matched against each dictionary word,
+		// check for spelling error
 		for (Future<HashMap<String, HashMap<String, Integer>>> future : futures) {
 			HashMap<String, HashMap<String, Integer>> temp = future.get();
 			for (Map.Entry<String, HashMap<String, Integer>> entry : temp.entrySet()) {
-				try{
-					Map.Entry<String, Integer> firstResultEntry = entry.getValue().entrySet().iterator().next();
-					// if cost is 0 perfect match found, store the spelling errors that had a non-zero cost
-					if (firstResultEntry.getValue() != 0) {
-						wordSpellingCorrections.put(entry.getKey(), entry.getValue().keySet());
-					}
-				}
-				catch(NoSuchElementException e){
+				try {
+					wordSpellingCorrections.put(entry.getKey(), entry.getValue().keySet());
+				} catch (NoSuchElementException e) {
 					e.printStackTrace();
 				}
 			}
@@ -285,18 +301,23 @@ public class SpellCheckMainGui extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * @param word: for each word in file compare to each word in dictionary via levenshteinDistance algorithm to discover the best spelling change proposals
+	 * @param word:
+	 *            for each word in file compare to each word in dictionary via
+	 *            levenshteinDistance algorithm to discover the best spelling
+	 *            change proposals
 	 * @return
 	 */
 	public HashMap<String, HashMap<String, Integer>> checkSpelling(String word) {
-		
+
 		HashMap<String, Integer> resultValue = new HashMap<String, Integer>();
 		HashMap<String, HashMap<String, Integer>> result = new HashMap<String, HashMap<String, Integer>>();
 		for (String dictWord : dictionaryFile.uniqueWords) {
-				resultValue.put(dictWord, levenshteinDistance(dictWord.toLowerCase(), word.toLowerCase()));
+			resultValue.put(dictWord, levenshteinDistance(dictWord.toLowerCase(), word.toLowerCase()));
 		}
-		// order the comparison by value which gives the best-to-worst word matches found in dictionary.
-		// of these best matches store a finite amount to save memory and then dump this order in an insertion order
+		// order the comparison by value which gives the best-to-worst word
+		// matches found in dictionary.
+		// of these best matches store a finite amount to save memory and then
+		// dump this order in an insertion order
 		// preserved collection.
 		result.put(word, resultValue.entrySet().stream().sorted(Entry.comparingByValue()).limit(MAXNUMOFWORDPROPOSALS)
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new)));
@@ -313,13 +334,15 @@ public class SpellCheckMainGui extends JFrame implements ActionListener {
 		return Double.parseDouble(version.substring(0, pos));
 	}
 
-	
 	/**
-	 * Evaluate how closely two string resemble each other. Return an integer to symbolize this integer to symbolize this resemblance
+	 * Evaluate how closely two string resemble each other. Return an integer to
+	 * symbolize this integer to symbolize this resemblance
 	 * 
 	 * @author https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Java
-	 * @param lhs string #1
-	 * @param rhs string #2
+	 * @param lhs
+	 *            string #1
+	 * @param rhs
+	 *            string #2
 	 * @return integer to symbolize resemblance of two input strings
 	 */
 	public static int levenshteinDistance(CharSequence lhs, CharSequence rhs) {
@@ -364,136 +387,149 @@ public class SpellCheckMainGui extends JFrame implements ActionListener {
 		// the distance is the cost for transforming all letters in both strings
 		return cost[len0 - 1];
 	}
-	
-	
+
 	/**
 	 * Whether filename ends with "txt" extension.
 	 * 
-	 * @param fileName to check if is txt or not
+	 * @param fileName
+	 *            to check if is txt or not
 	 * @return
 	 */
-	public Boolean isTxtExtension(String fileName){
+	public Boolean isTxtExtension(String fileName) {
 		int i = fileName.lastIndexOf('.');
-		String extension="";
+		String extension = "";
 		if (i > 0) {
-		    extension=fileName.substring(i+1).trim();
+			extension = fileName.substring(i + 1).trim();
 		}
-		if (extension.equals("txt")){
+		if (extension.equals("txt")) {
 			return true;
 		}
 		return false;
 	}
-	
-	
-	
+
 	/**
-	 * @param dictionary: validate the dictionary file loaded by the user.
+	 * @param dictionary:
+	 *            validate the dictionary file loaded by the user.
 	 */
-	public void validateDictionary(Dictionary dictionary){
+	public void validateDictionary(Dictionary dictionary) {
 		startButton.setEnabled(false);
-		
+
 		// mult-thread to load dictionary and other files at same time
 		new Thread(new Runnable() {
-	        public void run() {
-	        	openDictionaryButton.setEnabled(false);
-	        	
-	        	// keeps track of any ongoing loads by incrementing counter
-	        	synchronized(fileLoadsInProgress){
-	        		fileLoadsInProgress++;
-	        	}
-	        	log.append("Loading Dictionary:" + dictionary.file + "\n", Color.BLACK);
-	        	
-	        	// grab all the unique words in the dictionary
-	    		int returnValue = dictionary.storeUniqueWords();
-	    		
-	    		// check if dictionary was accessed and has at least one word
-	    		if (returnValue == dictionary.INVALID) {
-	    			log.append("Failed open dictionary search.\n", Color.red);
-	    		}else if(dictionary.uniqueWords.size()<1){
-	    			log.append("Please add a dictionary that has words in it. This program is designed for .txt files.\n", Color.red);
-	    		}
-	    		else {
-	    			
-	    			// warn when not txt file
-	    			if (!isTxtExtension(dictionary.file.getName())){
-	    				log.append("You loaded a non txt file as a dictionary, beware that this program is intended for ASCII encoded files.\n", Color.yellow);
-	    			}
-	    			
-	    			// assign to dictionaryFile here to ensure ditionaryFile is only assigned a reference when successful. Later checks on dictionaryFile ensure valid dictionary.
-	    			dictionaryFile=dictionary;
-	    			log.append("Successfully opened dictionary file with "+Integer.toString(dictionary.uniqueWords.size())+" words in it.\n", Color.green);
-	    		}
-	    		
-	    		// re-enable button to load another dictionary
-	    		openDictionaryButton.setEnabled(true);
-	    		
-	    		// keeps track of any ongoing file loads by modifying counter
-	    		decrementLoads();
-	        }
-	    }).start();
+			public void run() {
+				openDictionaryButton.setEnabled(false);
+
+				// keeps track of any ongoing loads by incrementing counter
+				synchronized (fileLoadsInProgress) {
+					fileLoadsInProgress++;
+				}
+				log.append("Loading Dictionary:" + dictionary.file + "\n", Color.BLACK);
+
+				// grab all the unique words in the dictionary
+				int returnValue = dictionary.storeUniqueWords();
+
+				// check if dictionary was accessed and has at least one word
+				if (returnValue == dictionary.INVALID) {
+					log.append("Failed open dictionary search.\n", Color.red);
+				} else if (dictionary.uniqueWords.size() < 1) {
+					log.append(
+							"Please add a dictionary that has words in it. This program is designed for .txt files.\n",
+							Color.red);
+				} else {
+
+					// warn when not txt file
+					if (!isTxtExtension(dictionary.file.getName())) {
+						log.append(
+								"You loaded a non txt file as a dictionary, beware that this program is intended for ASCII encoded files.\n",
+								Color.yellow);
+					}
+
+					// assign to dictionaryFile here to ensure ditionaryFile is
+					// only assigned a reference when successful. Later checks
+					// on dictionaryFile ensure valid dictionary.
+					dictionaryFile = dictionary;
+					log.append("Successfully opened dictionary file with "
+							+ Integer.toString(dictionary.uniqueWords.size()) + " words in it.\n", Color.green);
+				}
+
+				// re-enable button to load another dictionary
+				openDictionaryButton.setEnabled(true);
+
+				// keeps track of any ongoing file loads by modifying counter
+				decrementLoads();
+			}
+		}).start();
 	}
-	
+
 	/**
-	 * @param tempFileSpellCheck validate the file to spell check loaded by the user.
+	 * @param tempFileSpellCheck
+	 *            validate the file to spell check loaded by the user.
 	 */
-	public void validateFileToSpellCheck(FileToSpellCheck tempFileSpellCheck){
+	public void validateFileToSpellCheck(FileToSpellCheck tempFileSpellCheck) {
 		startButton.setEnabled(false);
-		
+
 		// mult-thread to load dictionary and other files at same time
 		new Thread(new Runnable() {
-	        public void run() {
-	        	openFileToSpellCheck.setEnabled(false);
-	        	
-//	        	keeps track of any ongoing file loads by modifying counter
-	        	synchronized(fileLoadsInProgress){
-	        		fileLoadsInProgress++;
-	        	}
-	        	
+			public void run() {
+				openFileToSpellCheck.setEnabled(false);
+
+				// keeps track of any ongoing file loads by modifying counter
+				synchronized (fileLoadsInProgress) {
+					fileLoadsInProgress++;
+				}
+
 				log.append("Loading file:" + tempFileSpellCheck.file + "\n", Color.BLACK);
-				
+
 				// grab all unique words in file
 				int returnValue = tempFileSpellCheck.storeWordsForSpellChecking();
-				
-				// if file is accessed and has more than 50000 but at least one word then accept it.
-				// word limit was chosen to limit excessive runtimes. More than 50000 is actually fine if someone is willing to wait 5 min or more
+
+				// if file is accessed and has more than 50000 but at least one
+				// word then accept it.
+				// word limit was chosen to limit excessive runtimes. More than
+				// 50000 is actually fine if someone is willing to wait 5 min or
+				// more
 				if (returnValue == tempFileSpellCheck.INVALID) {
 					log.append("Failed to open file.\n", Color.red);
-		
-				}else if(tempFileSpellCheck.allWords.size()==0){
-					log.append("Please add a file that has words in it. This program is designed for .txt files.\n", Color.red);
-				} else if (tempFileSpellCheck.allWords.size()>50000){
+
+				} else if (tempFileSpellCheck.allWords.size() == 0) {
+					log.append("Please add a file that has words in it. This program is designed for .txt files.\n",
+							Color.red);
+				} else if (tempFileSpellCheck.allWords.size() > 50000) {
 					log.append("Please add a file that has less than 50000 words in it.\n", Color.red);
 				}
-				
+
 				else {
-					
+
 					// warn when not txt file
-					if (!isTxtExtension(tempFileSpellCheck.file.getName())){
-	    				log.append("You loaded a non txt file to spell check, beware that this program is intended for ASCII encoded files.\n", Color.yellow);
-	    			}
-					
-					// assign to fileToSpellCheck here to ensure file is only assigned a reference when successful.
-					fileToSpellCheck=tempFileSpellCheck;
-					log.append("Successfully opened file with "+Integer.toString(tempFileSpellCheck.allWords.size())+" words to spell check.\n", Color.green);
+					if (!isTxtExtension(tempFileSpellCheck.file.getName())) {
+						log.append(
+								"You loaded a non txt file to spell check, beware that this program is intended for ASCII encoded files.\n",
+								Color.yellow);
+					}
+
+					// assign to fileToSpellCheck here to ensure file is only
+					// assigned a reference when successful.
+					fileToSpellCheck = tempFileSpellCheck;
+					log.append("Successfully opened file with " + Integer.toString(tempFileSpellCheck.allWords.size())
+							+ " words to spell check.\n", Color.green);
 				}
 				openFileToSpellCheck.setEnabled(true);
-				
-//				keeps track of any ongoing file loads by modifying counter
+
+				// keeps track of any ongoing file loads by modifying counter
 				decrementLoads();
-	        }
-	    }).start();
+			}
+		}).start();
 	}
-	
+
 	/**
 	 * keeps track of any ongoing file loads by modifying counter
 	 */
-	public void decrementLoads(){
-		synchronized (fileLoadsInProgress){
-			 if(--fileLoadsInProgress==0){
+	public void decrementLoads() {
+		synchronized (fileLoadsInProgress) {
+			if (--fileLoadsInProgress == 0) {
 				startButton.setEnabled(true);
 			}
 		}
 	}
-	
 
 }

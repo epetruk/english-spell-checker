@@ -9,7 +9,8 @@ import java.util.regex.Pattern;
 /**
  * @author epetruk
  *
- * Represents the dictionary file the user loads. Holds unique words found in dictionary.
+ *         Represents the dictionary file the user loads. Holds unique words
+ *         found in dictionary.
  */
 public class Dictionary extends SpellCheckFile {
 	

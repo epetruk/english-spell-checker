@@ -10,31 +10,32 @@ import java.util.regex.Pattern;
 /**
  * @author epetruk
  * 
- * abstract class outlining some implementation and structure for subclasses
+ *         abstract class outlining some implementation and structure for
+ *         subclasses
  */
 abstract public class SpellCheckFile {
 
 	// pattern to match words in file
 	Pattern pattern;
-	
+
 	File file;
-	
+
 	// find matches from pattern
 	Matcher matcher;
-	
-	// match found 
+
+	// match found
 	String potentialWord;
-	
-	//when error return standard value
+
+	// when error return standard value
 	final int INVALID = 1;
 
 	SpellCheckFile(File paramFile) {
 		file = paramFile;
 	}
 
-	
 	/**
-	 * @param file read this file to string
+	 * @param file
+	 *            read this file to string
 	 * @return
 	 * @throws IOException
 	 */

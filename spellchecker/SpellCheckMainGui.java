@@ -223,15 +223,15 @@ public class SpellCheckMainGui extends JFrame implements ActionListener {
 		// evaluating large files could take a while, "doInBackground"
 		@Override
 		protected Void doInBackground() throws Exception {
-			long startTime = System.currentTimeMillis();
+//			long startTime = System.currentTimeMillis();
 			try {
 				findSpellingErrors();
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
 			
-			long endTime = System.currentTimeMillis();
-			System.out.println("Total execution time: " + (endTime - startTime) );
+//			long endTime = System.currentTimeMillis();
+//			System.out.println("Total execution time: " + (endTime - startTime) );
 			return null;
 		}
 
